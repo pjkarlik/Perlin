@@ -38,12 +38,22 @@ export default class Render {
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
-    const n = this.PerlinNoise.noise(size * x, size * y, 0.8);
-    const m = this.PerlinNoise.noise(size * x, size * y, 0.5);
-    const o = this.PerlinNoise.noise(size * x, size * y, 1);
-    r = Math.round(255 * n);
-    g = Math.round(255 * m);
-    b = Math.round(255 * o);
+    const n = this.PerlinNoise.noise(size * x, size * y, 0.5);
+    // render normal
+    // const m = this.PerlinNoise.noise(size * x, size * y, 0.5);
+    // const o = this.PerlinNoise.noise(size * x, size * y, 0.5);
+    // r = Math.round(255 * n);
+    // g = Math.round(255 * m);
+    // b = Math.round(255 * o);
+    // render storm
+    // x = (1 + Math.cos(n + 2 * Math.PI * x - 0.5));
+    // x = Math.sqrt(x); y *= y;
+    // r = 255 - x * 255; g = 255 - n * x * 255; b = y * 255;
+    // render octowave
+    const m = Math.cos(n * 35);
+    g = Math.round(m * 255);
+    b = 255 - g;
+    r = g - 255;
     return {
       r, g, b, a: 255,
     };
