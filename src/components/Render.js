@@ -16,9 +16,9 @@ export default class Render {
     this.shader = this.shader.bind(this);
     this.renderLoop = this.renderLoop.bind(this);
     const iteration = document.getElementById('iteration');
-    this.iteration = iteration.value;
+    this.iteration = iteration.value * 0.1;
     iteration.addEventListener('change', () => {
-      this.iteration = iteration.value;
+      this.iteration = iteration.value * 0.1;
       this.renderLoop();
     });
     // run function //
@@ -50,10 +50,11 @@ export default class Render {
     // x = Math.sqrt(x); y *= y;
     // r = 255 - x * 255; g = 255 - n * x * 255; b = y * 255;
     // render octowave
-    const m = Math.cos(n * 35);
+    const m = Math.cos(n * 45);
+    const o = Math.sin(n * 45);
     g = Math.round(m * 255);
-    b = 255 - g;
-    r = g - 255;
+    b = g; // 255 - g;
+    r = Math.round(o * 255);
     return {
       r, g, b, a: 255,
     };
