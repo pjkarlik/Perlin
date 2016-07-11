@@ -56,8 +56,7 @@ export default class Render {
     // render octowave
     const m = Math.cos(n * 45);
     const o = Math.sin(n * 45);
-    g = Math.round(m * 255);
-    b = g;
+    g = b = Math.round(m * 255);
     r = Math.round(o * 255);
 
     return {

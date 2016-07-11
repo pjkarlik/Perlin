@@ -19,9 +19,9 @@ export default class Perlin {
       49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
       138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
     ];
-    for (let i = 0; i < 513; i++) {
-      this.p[i] = Math.floor(Math.random() * 256);
-      // this.p[256 + i] = this.p[i] = this.permutation[i];
+    for (let i = 0; i < 512; i++) {
+      this.p[i] = this.p[256 + i] = this.p[i] = this.permutation[i];
+      // Math.floor(Math.random() * 256);
     }
     this.fade = this.fade.bind(this);
     this.lerp = this.lerp.bind(this);
@@ -29,18 +29,47 @@ export default class Perlin {
     this.scale = this.scale.bind(this);
     this.noise = this.noise.bind(this);
   }
+  // Fade function as defined by Ken Perlin.
   fade(t) {
+    // This eases coordinate values
+    // so that they will ease towards integral values.
+    // This ends up smoothing the final output.
+    // 6t^5 - 15t^4 + 10t^3
     return t * t * t * (t * (t * 6 - 15) + 10);
   }
+  // Linear interpolation
+  // lerp(transform, vector0/start, vector1/amt)
   lerp(t, a, b) {
-    return a + t * (b - a);
+    // Imprecise method which does not guarantee v = v1 when t = 1, due to floating-point arithmetic error.
+    // return a + t * (b - a);
+    // Precise method which guarantees v = v1 when t = 1
+    return (1 - t) * a + t * b;
   }
   grad(hash, x, y, z) {
-    const h = hash & 15;
-    const u = h < 8 ? x : y;
-    /* eslint no-nested-ternary: 0 */
-    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
-    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    // const h = hash & 15;
+    // const u = h < 8 ? x : y;
+    // /* eslint no-nested-ternary: 0 */
+    // const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    // return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    switch (hash & 0xF) {
+      case 0x0: return x + y;
+      case 0x1: return -x + y;
+      case 0x2: return x - y;
+      case 0x3: return -x - y;
+      case 0x4: return x + z;
+      case 0x5: return -x + z;
+      case 0x6: return x - z;
+      case 0x7: return -x - z;
+      case 0x8: return y + z;
+      case 0x9: return -y + z;
+      case 0xA: return y - z;
+      case 0xB: return -y - z;
+      case 0xC: return y + x;
+      case 0xD: return -y + z;
+      case 0xE: return y - x;
+      case 0xF: return -y - z;
+      default: return 0; // never happens
+    }
   }
   scale(n) {
     return (1 + n) / 2;
@@ -56,13 +85,14 @@ export default class Perlin {
     const u = this.fade(x);
     const v = this.fade(y);
     const w = this.fade(z);
+    // Hash the 8 Corners of the Cube.
     const A = this.p[X] + Y;
     const AA = this.p[A] + Z;
     const AB = this.p[A + 1] + Z;
     const B = this.p[X + 1] + Y;
     const BA = this.p[B] + Z;
     const BB = this.p[B + 1] + Z;
-
+    // Add Blended Results from 8 Corners of the Cube.
     return this.scale(
       this.lerp(w,
         this.lerp(v,
