@@ -38,7 +38,7 @@ export default class Render {
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
-    const n = this.PerlinNoise.noise(size * x, size * y, 0.5);
+    const n = this.PerlinNoise.fastnoise(size * x, size * y, 0.5);
     // render normal
     // r = g = b Math.round(255 * n);
     // rainbow

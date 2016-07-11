@@ -20,7 +20,7 @@ export default class Perlin {
       138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
     ];
     for (let i = 0; i < 512; i++) {
-      this.p[i] = this.p[256 + i] = this.p[i] = this.permutation[i];
+      this.p[i] = this.permutation[i % 256];
       // Math.floor(Math.random() * 256);
     }
     this.fastfloor = this.fastfloor.bind(this);
@@ -28,6 +28,7 @@ export default class Perlin {
     this.lerp = this.lerp.bind(this);
     this.grad = this.grad.bind(this);
     this.scale = this.scale.bind(this);
+    this.fastnoise = this.fastnoise.bind(this);
     this.noise = this.noise.bind(this);
   }
   // Optimized Math.Floor function - better performace.
@@ -80,6 +81,47 @@ export default class Perlin {
     return (1 + n) / 2;
   }
   /* eslint no-param-reassign: 0 */
+  // Fast Noise Function - SimplexNoise
+  fastnoise(x, y, z) {
+    // put a |0 at the end of a number to force it to be 32 bit
+    const ix = x | 0; x -= ix;
+    const iy = y | 0; y -= iy;
+    const iz = z | 0; z -= iz;
+
+    const gx = ix & 0xFF;
+    const gy = iy & 0xFF;
+    const gz = iz & 0xFF;
+
+    const a0 = gy + this.permutation[gx];
+    const b0 = gy + this.permutation[gx + 1];
+    const aa = gz + this.permutation[a0];
+    const ab = gz + this.permutation[a0 + 1];
+    const ba = gz + this.permutation[b0];
+    const bb = gz + this.permutation[b0 + 1];
+
+    const aa0 = this.permutation[aa]; const aa1 = this.permutation[aa + 1];
+    const ab0 = this.permutation[ab]; const ab1 = this.permutation[ab + 1];
+    const ba0 = this.permutation[ba]; const ba1 = this.permutation[ba + 1];
+    const bb0 = this.permutation[bb]; const bb1 = this.permutation[bb + 1];
+
+    const a1 = this.grad(bb1, x - 1, y - 1, z - 1);
+    const a2 = this.grad(ab1, x, y - 1, z - 1);
+    const a3 = this.grad(ba1, x - 1, y, z - 1);
+    const a4 = this.grad(aa1, x, y, z - 1);
+    const a5 = this.grad(bb0, x - 1, y - 1, z);
+    const a6 = this.grad(ab0, x, y - 1, z);
+    const a7 = this.grad(ba0, x - 1, y, z);
+    const a8 = this.grad(aa0, x, y, z);
+
+    const u = this.fade(x);
+    const v = this.fade(y);
+    const w = this.fade(z);
+
+    const vector0 = this.lerp(v, this.lerp(u, a8, a7), this.lerp(u, a6, a5));
+    const vector1 = this.lerp(v, this.lerp(u, a4, a3), this.lerp(u, a2, a1));
+    return this.lerp(w, vector0, vector1);
+  }
+  // Original Noise Function
   noise(x, y, z) {
     const X = this.fastfloor(x) & 255;
     const Y = this.fastfloor(y) & 255;
