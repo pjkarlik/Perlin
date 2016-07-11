@@ -23,11 +23,16 @@ export default class Perlin {
       this.p[i] = this.p[256 + i] = this.p[i] = this.permutation[i];
       // Math.floor(Math.random() * 256);
     }
+    this.fastfloor = this.fastfloor.bind(this);
     this.fade = this.fade.bind(this);
     this.lerp = this.lerp.bind(this);
     this.grad = this.grad.bind(this);
     this.scale = this.scale.bind(this);
     this.noise = this.noise.bind(this);
+  }
+  // Optimized Math.Floor function - better performace.
+  fastfloor(x) {
+    return x << 0; // x > 0 ? x : x - 1;
   }
   // Fade function as defined by Ken Perlin.
   fade(t) {
@@ -76,12 +81,12 @@ export default class Perlin {
   }
   /* eslint no-param-reassign: 0 */
   noise(x, y, z) {
-    const X = Math.floor(x) & 255;
-    const Y = Math.floor(y) & 255;
-    const Z = Math.floor(z) & 255;
-    x -= Math.floor(x);
-    y -= Math.floor(y);
-    z -= Math.floor(z);
+    const X = this.fastfloor(x) & 255;
+    const Y = this.fastfloor(y) & 255;
+    const Z = this.fastfloor(z) & 255;
+    x -= this.fastfloor(x);
+    y -= this.fastfloor(y);
+    z -= this.fastfloor(z);
     const u = this.fade(x);
     const v = this.fade(y);
     const w = this.fade(z);

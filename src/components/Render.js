@@ -40,11 +40,7 @@ export default class Render {
     const size = this.iteration;  // pick a scaling value
     const n = this.PerlinNoise.noise(size * x, size * y, 0.5);
     // render normal
-    // const m = this.PerlinNoise.noise(size * x, size * y, 0.5);
-    // const o = this.PerlinNoise.noise(size * x, size * y, 0.5);
-    // r = Math.round(255 * n);
-    // g = Math.round(255 * m);
-    // b = Math.round(255 * o);
+    // r = g = b Math.round(255 * n);
     // rainbow
     // b = 255 - 255 * (1 + Math.sin(n + 6.3 * x)) / 2;
     // g = 255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2;
@@ -56,7 +52,8 @@ export default class Render {
     // render octowave
     const m = Math.cos(n * 45);
     const o = Math.sin(n * 45);
-    g = b = Math.round(m * 255);
+    g = Math.round(m * 255);
+    b = g;
     r = Math.round(o * 255);
 
     return {
