@@ -1,5 +1,3 @@
-// import GlitterThang from './components/Glitter.js';
-// import Floater from './components/Floater';
 import Render from './components/Render';
 import { description, version } from '../version.json';
 require('../resources/styles/styles.css');

@@ -45,6 +45,10 @@ export default class Render {
     // r = Math.round(255 * n);
     // g = Math.round(255 * m);
     // b = Math.round(255 * o);
+    // rainbow
+    // b = 255 - 255 * (1 + Math.sin(n + 6.3 * x)) / 2;
+    // g = 255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2;
+    // r = 255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2;
     // render storm
     // x = (1 + Math.cos(n + 2 * Math.PI * x - 0.5));
     // x = Math.sqrt(x); y *= y;
@@ -53,8 +57,9 @@ export default class Render {
     const m = Math.cos(n * 45);
     const o = Math.sin(n * 45);
     g = Math.round(m * 255);
-    b = g; // 255 - g;
+    b = g;
     r = Math.round(o * 255);
+
     return {
       r, g, b, a: 255,
     };
