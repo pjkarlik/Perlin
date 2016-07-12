@@ -4,8 +4,11 @@
 
   This is a port of Ken Perlin's Java code. The
   original Java code is at http://cs.nyu.edu/%7Eperlin/noise/.
+  SimplexNoise document http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
 
 ## Change Log
+  * Added Animation - tweaking functions still...
+  * Simplex Noise functions - much faster than Perlin
   * Initial Commit - Basic formula found online.
 
 ## Run the example
