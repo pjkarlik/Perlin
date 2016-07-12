@@ -67,12 +67,17 @@ export default class Render {
         break;
       }
       case 'storm': {
-        // render storm
+        // storm
         x = (1 + Math.cos(n + 2 * Math.PI * x - 0.5));
         x = Math.sqrt(x); y *= y;
         r = Math.round(255 - x * 255);
         g = Math.round(155 - n * x * 255);
         b = Math.round(y * 255);
+        break;
+      }
+      case 'default': {
+        // default
+        r = g = b = Math.round(255 * n);
         break;
       }
       default:
@@ -81,9 +86,6 @@ export default class Render {
     return {
       r, g, b, a: 255,
     };
-    // const n = simplexNoise(size * x, size * y, mills);
-    // render normal
-    // r = g = b Math.round(255 * n);
   }
   renderLoop() {
     const size = 5;
