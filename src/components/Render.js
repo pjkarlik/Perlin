@@ -21,6 +21,11 @@ export default class Render {
     iteration.addEventListener('change', () => {
       this.iteration = iteration.value * 0.1;
     });
+    const shaderType = document.getElementById('shader');
+    this.shaderType = shaderType.value;
+    shaderType.addEventListener('change', () => {
+      this.shaderType = shaderType.value;
+    });
     // run function //
     this.renderLoop();
   }
@@ -34,32 +39,51 @@ export default class Render {
     return canvasElement;
   }
   /* eslint no-param-reassign: 0 */
+  /* eslint consistent-return: 0 */
   shader(x, y, w, h) {
-    this.time += 0.001;
+    this.time += 0.002;
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
     const n = simplexNoise(size * x, size * y, this.time / 1000);
-    // const n = simplexNoise(size * x, size * y, mills);
-    // render normal
-    // r = g = b Math.round(255 * n);
-    // rainbow
-    // b = 255 - 255 * (1 + Math.sin(n + 6.3 * x)) / 2;
-    // g = 255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2;
-    // r = 255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2;
-    // render storm
-    // x = (1 + Math.cos(n + 2 * Math.PI * x - 0.5));
-    // x = Math.sqrt(x); y *= y;
-    // r = 255 - x * 255; g = 255 - n * x * 255; b = y * 255;
-    // render octowave
-    const m = Math.cos(n * 45);
-    const o = Math.sin(n * 45);
-    const g = Math.round(m * 255);
-    const b = g;
-    const r = Math.round(o * 255);
+    let r;
+    let g;
+    let b;
+    switch (this.shaderType) {
+      case 'octal': {
+        // render octowave
+        const m = Math.cos(n * 45);
+        const o = Math.sin(n * 45);
+        g = Math.round(m * 255);
+        b = g;
+        r = Math.round(o * 255);
+        break;
+      }
+      case 'rainbow': {
+        // rainbow
+        b = Math.round(255 - 255 * (1 + Math.sin(n + 6.3 * x)) / 2);
+        g = Math.round(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
+        r = Math.round(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
+        break;
+      }
+      case 'storm': {
+        // render storm
+        x = (1 + Math.cos(n + 2 * Math.PI * x - 0.5));
+        x = Math.sqrt(x); y *= y;
+        r = Math.round(255 - x * 255);
+        g = Math.round(155 - n * x * 255);
+        b = Math.round(y * 255);
+        break;
+      }
+      default:
+        break;
+    }
     return {
       r, g, b, a: 255,
     };
+    // const n = simplexNoise(size * x, size * y, mills);
+    // render normal
+    // r = g = b Math.round(255 * n);
   }
   renderLoop() {
     const size = 5;
@@ -69,7 +93,7 @@ export default class Render {
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         const pixel = this.shader(x, y, w, h);
-        this.surface.fillStyle = `rgba(${pixel.r}, ${pixel.g}, ${pixel.b}, ${pixel.a})`;
+        this.surface.fillStyle = `rgba(${pixel.r},${pixel.g},${pixel.b},${pixel.a})`;
         this.surface.fillRect(x * size, y * size, size, size);
       }
     }
