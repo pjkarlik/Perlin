@@ -16,6 +16,7 @@ export default class Render {
     // Bind Stuff //
     this.shader = this.shader.bind(this);
     this.renderLoop = this.renderLoop.bind(this);
+    // Control Stuff //
     const iteration = document.getElementById('iteration');
     this.iteration = iteration.value * 0.1;
     iteration.addEventListener('change', () => {
@@ -40,7 +41,7 @@ export default class Render {
   }
   /* eslint no-param-reassign: 0 */
   shader(x, y, w, h) {
-    this.time += 0.002;
+    this.time += 0.003;
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
@@ -51,11 +52,11 @@ export default class Render {
     switch (this.shaderType) {
       case 'octal': {
         // render octowave
-        const m = Math.cos(n * 45);
-        const o = Math.sin(n * 45);
-        g = Math.round(m * 255);
+        // const m = Math.cos(n * 45);
+        // const o = Math.sin(n * 45);
+        g = Math.round(Math.cos(n * 45) * 255);
         b = g;
-        r = Math.round(o * 255);
+        r = Math.round(Math.sin(n * 45) * 255);
         break;
       }
       case 'rainbow': {
