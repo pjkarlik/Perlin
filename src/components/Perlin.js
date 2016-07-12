@@ -52,10 +52,16 @@ export default class Perlin {
     return (1 - t) * a + t * b;
   }
   grad(hash, x, y, z) {
+    // Take the hashed value and take the first 4 bits of it (15 == 0b1111)
     // const h = hash & 15;
+    // If the most significant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
     // const u = h < 8 ? x : y;
     // /* eslint no-nested-ternary: 0 */
+    // If the first and second significant bits are 0 set v = y
+    // If the first and second significant bits are 1 set v = x
+    // If the first and second significant bits are not equal (0/1, 1/0) set v = z
     // const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    // Use the last 2 bits to decide if u and v are positive or negative.  Then return their addition.
     // return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
     switch (hash & 0xF) {
       case 0x0: return x + y;

@@ -20,6 +20,7 @@ export default class Render {
     this.iteration = iteration.value * 0.1;
     iteration.addEventListener('change', () => {
       this.iteration = iteration.value * 0.1;
+      this.renderLoop();
     });
     // run function //
     this.renderLoop();
@@ -34,13 +35,14 @@ export default class Render {
     return canvasElement;
   }
   /* eslint no-param-reassign: 0 */
-  shader(x, y, w, h) {
-    this.time += 0.001;
+  shader(r, g, b, a, x, y, w, h) {
+    this.time ++;
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
-    const n = simplexNoise(size * x, size * y, this.time / 1000);
-    // const n = simplexNoise(size * x, size * y, mills);
+    const date = new Date();
+    const mills = date.getMilliseconds() * 0.001;
+    const n = simplexNoise(size * x, size * y, mills);
     // render normal
     // r = g = b Math.round(255 * n);
     // rainbow
@@ -54,25 +56,38 @@ export default class Render {
     // render octowave
     const m = Math.cos(n * 45);
     const o = Math.sin(n * 45);
-    const g = Math.round(m * 255);
-    const b = g;
-    const r = Math.round(o * 255);
+    g = Math.round(m * 255);
+    b = g;
+    r = Math.round(o * 255);
+
     return {
       r, g, b, a: 255,
     };
   }
   renderLoop() {
-    const size = 5;
-    const w = this.perlinCanvas.width / size;
-    const h = this.perlinCanvas.height / size;
+    const w = this.perlinCanvas.width;
+    const h = this.perlinCanvas.height;
 
-    for (let x = 0; x < w; x++) {
-      for (let y = 0; y < h; y++) {
-        const pixel = this.shader(x, y, w, h);
-        this.surface.fillStyle = `rgba(${pixel.r}, ${pixel.g}, ${pixel.b}, ${pixel.a})`;
-        this.surface.fillRect(x * size, y * size, size, size);
-      }
+    const imageData = this.surface.createImageData(w, h);
+
+    for (let i = 0, l = imageData.data.length; i < l; i += 4) {
+      const x = (i / 4) % w;
+      const y = Math.floor(i / w / 4);
+
+      const r = imageData.data[i + 0];
+      const g = imageData.data[i + 1];
+      const b = imageData.data[i + 2];
+      const a = imageData.data[i + 3];
+
+      const pixel = this.shader(r, g, b, a, x, y, w, h);
+
+      imageData.data[i] = pixel.r;
+      imageData.data[i + 1] = pixel.g;
+      imageData.data[i + 2] = pixel.b;
+      imageData.data[i + 3] = pixel.a;
     }
-    window.requestAnimationFrame(this.renderLoop);
+
+    this.surface.putImageData(imageData, 0, 0);
+    // window.requestAnimationFrame(this.renderLoop);
   }
 }
