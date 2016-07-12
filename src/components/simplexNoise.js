@@ -70,6 +70,12 @@ export default function simplexNoise(x, y, z) {
   const iy = y | 0; y -= iy;
   const iz = z | 0; z -= iz;
 
+  // Anding an integer with 0xFF leaves only the least significant byte. For example, to get
+  // the first byte in a short s, you can write s & 0xFF. This is typically referred to as "masking".
+  // If byte1 is either a single byte type (like uint8_t) or is already less than 256
+  // (and as a result is all zeroes except for the least significant byte) there is no need to mask
+  // out the higher bits, as they are already zero.
+
   const gx = ix & 0xFF;
   const gy = iy & 0xFF;
   const gz = iz & 0xFF;
@@ -81,10 +87,14 @@ export default function simplexNoise(x, y, z) {
   const ba = gz + perm[b0];
   const bb = gz + perm[b0 + 1];
 
-  const aa0 = perm[aa]; const aa1 = perm[aa + 1];
-  const ab0 = perm[ab]; const ab1 = perm[ab + 1];
-  const ba0 = perm[ba]; const ba1 = perm[ba + 1];
-  const bb0 = perm[bb]; const bb1 = perm[bb + 1];
+  const aa0 = perm[aa];
+  const aa1 = perm[aa + 1];
+  const ab0 = perm[ab];
+  const ab1 = perm[ab + 1];
+  const ba0 = perm[ba];
+  const ba1 = perm[ba + 1];
+  const bb0 = perm[bb];
+  const bb1 = perm[bb + 1];
 
   const a1 = grad(bb1, x - 1, y - 1, z - 1);
   const a2 = grad(ab1, x, y - 1, z - 1);

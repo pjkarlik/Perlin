@@ -68,11 +68,12 @@ export default class Render {
       }
       case 'storm': {
         // storm
-        x = (1 + Math.cos(n + 2 * Math.PI * x - 0.5));
+        x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
+        // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
         x = Math.sqrt(x); y *= y;
         r = Math.round(255 - x * 255);
-        g = Math.round(155 - n * x * 255);
-        b = Math.round(y * 255);
+        b = Math.round(n * x * 255);
+        g = b; // Math.round(y * 255);
         break;
       }
       case 'default': {
@@ -88,7 +89,7 @@ export default class Render {
     };
   }
   renderLoop() {
-    const size = 5;
+    const size = 6;
     const w = this.perlinCanvas.width / size;
     const h = this.perlinCanvas.height / size;
 
