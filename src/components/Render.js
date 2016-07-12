@@ -39,7 +39,6 @@ export default class Render {
     return canvasElement;
   }
   /* eslint no-param-reassign: 0 */
-  /* eslint consistent-return: 0 */
   shader(x, y, w, h) {
     this.time += 0.002;
     x /= w;

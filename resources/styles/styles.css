@@ -44,7 +44,9 @@ canvas {
   transform: translateX(-50%);
   z-index: 2;
 }
-
+.selectBox{
+  width: 68%;
+}
 label {
   color: #FFF;
   display: inline-block;
