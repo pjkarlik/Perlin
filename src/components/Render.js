@@ -1,5 +1,5 @@
 
-import simplexNoise from './simplexNoise';
+import simplexNoise, { fastfloor } from './simplexNoise';
 
 /** Parent Render Class */
 export default class Render {
@@ -45,38 +45,54 @@ export default class Render {
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
-    const n = simplexNoise(size * x, size * y, this.time / 1000);
+    let n;
     let r;
     let g;
     let b;
     switch (this.shaderType) {
       case 'octal': {
+        n = simplexNoise(size * x, size * y, this.time / 1000);
         // render octowave
-        // const m = Math.cos(n * 45);
-        // const o = Math.sin(n * 45);
-        g = Math.round(Math.cos(n * 45) * 255);
-        b = g;
-        r = Math.round(Math.sin(n * 45) * 255);
+        const mult = 25;
+        const m = Math.cos(n * mult);
+        const o = Math.sin(n * mult);
+        r = fastfloor(m * 255);
+        b = fastfloor(o * 255);
+        g = b;
+        break;
+      }
+      case 'offset': {
+        n = simplexNoise(size * x, size * y, this.time / 1000);
+        // render octowave
+        const mult = 15;
+        const m = Math.cos(n * mult);
+        const o = Math.sin(n * mult + this.time);
+        r = fastfloor(m * 255);
+        g = fastfloor(o * 255);
+        b = r;
         break;
       }
       case 'rainbow': {
+        n = simplexNoise(size * 2 * x, size * 2 * y, this.time / 1000);
         // rainbow
-        b = Math.round(255 - 255 * (1 + Math.sin(n + 6.3 * x)) / 2);
-        g = Math.round(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
-        r = Math.round(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
+        b = fastfloor(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
+        g = fastfloor(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
+        r = fastfloor(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
         break;
       }
       case 'storm': {
+        n = simplexNoise(size * x, size * y, this.time / 1000);
         // storm
         x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
         // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
         x = Math.sqrt(x); y *= y;
-        r = Math.round(255 - x * 255);
-        b = Math.round(n * x * 255);
+        r = fastfloor(255 - x * 255);
+        b = fastfloor(n * x * 255);
         g = b; // Math.round(y * 255);
         break;
       }
       case 'default': {
+        n = simplexNoise(size * x, size * y, this.time / 1000);
         // default
         r = g = b = Math.round(255 * n);
         break;
@@ -89,10 +105,10 @@ export default class Render {
     };
   }
   renderLoop() {
-    const size = 6;
+    const size = 5;
     const w = this.perlinCanvas.width / size;
     const h = this.perlinCanvas.height / size;
-
+    this.surface.clearRect(0, 0, w, h);
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         const pixel = this.shader(x, y, w, h);

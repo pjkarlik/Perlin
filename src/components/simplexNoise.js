@@ -45,6 +45,10 @@ export function scale(n) {
   return (1 + n) / 2;
 }
 
+export function dist(a, b, c, d) {
+  return Math.sqrt(((a - c) * (a - c) + (b - d) * (b - d)));
+}
+
 export default function simplexNoise(x, y, z) {
   const perm = new Array(512);
   const permutation = [151, 160, 137, 91, 90, 15,
