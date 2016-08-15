@@ -11,6 +11,7 @@ const config = {
   target: 'web',
   devServer: {
     host: '0.0.0.0',
+    port: '9090',
     historyApiFallback: true,
   },
   devtool: 'source-map',

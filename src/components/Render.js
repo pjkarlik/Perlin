@@ -92,6 +92,7 @@ export default class Render {
         break;
       }
       case 'default': {
+        console.log(size * x, size * y, this.time / 1000);
         n = simplexNoise(size * x, size * y, this.time / 1000);
         // default
         r = g = b = Math.round(255 * n);
