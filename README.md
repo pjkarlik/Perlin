@@ -7,16 +7,17 @@
   SimplexNoise document http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
 
 ## Change Log
+  * Updated Functions - Improved performance - adapted from online
   * Added Animation - tweaking functions still...
   * Simplex Noise functions - much faster than Perlin
   * Initial Commit - Basic formula found online.
 
 ## Run the example
-  Requires Node v6.2.1 or greater
+  Requires Node v6.9.1 or greater
 
 ```bash
 $ npm install
-$ npm run dev & open http://localhost:8080
+$ npm run dev & open http://localhost:9090
 ```
 
 ## License

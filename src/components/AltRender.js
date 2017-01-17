@@ -1,5 +1,4 @@
-
-import simplexNoise from './simplexNoise';
+import { Generator } from './simplexTwo';
 
 /** Parent Render Class */
 export default class Render {
@@ -9,6 +8,7 @@ export default class Render {
     this.width = width;
     this.height = height;
     this.time = 0;
+    this.generator = new Generator(0);
     // Set Up canvas and surface object //
     this.perlinCanvas = this.createCanvas('perlin');
     this.surface = this.perlinCanvas.getContext('2d');
@@ -18,9 +18,9 @@ export default class Render {
     this.renderLoop = this.renderLoop.bind(this);
     // Control Stuff //
     const iteration = document.getElementById('iteration');
-    this.iteration = iteration.value * 0.1;
+    this.iteration = iteration.value * 0.01;
     iteration.addEventListener('change', () => {
-      this.iteration = iteration.value * 0.1;
+      this.iteration = iteration.value * 0.01;
     });
     const shaderType = document.getElementById('shader');
     this.shaderType = shaderType.value;
@@ -41,7 +41,7 @@ export default class Render {
   }
   /* eslint no-param-reassign: 0 */
   shader(x, y, w, h) {
-    this.time += 0.003;
+    this.time += 0.001;
     x /= w;
     y /= h; // normalize
     const size = this.iteration;  // pick a scaling value
@@ -51,7 +51,7 @@ export default class Render {
     let b;
     switch (this.shaderType) {
       case 'octal': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // render octowave
         const mult = 25;
         const m = Math.cos(n * mult);
@@ -62,7 +62,7 @@ export default class Render {
         break;
       }
       case 'offset': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // render octowave
         const mult = 15;
         const m = Math.cos(n * mult);
@@ -73,7 +73,7 @@ export default class Render {
         break;
       }
       case 'rainbow': {
-        n = simplexNoise(size * 2 * x, size * 2 * y, this.time / 1000);
+        n = Math.abs(this.generator.simplex3(size * 2 * x, size * 2 * y, this.time / 1000));
         // rainbow
         b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
         g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
@@ -81,7 +81,7 @@ export default class Render {
         break;
       }
       case 'storm': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // storm
         x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
         // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
@@ -92,7 +92,7 @@ export default class Render {
         break;
       }
       case 'default': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // default
         r = g = b = Math.round(255 * n);
         break;
