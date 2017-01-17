@@ -1,44 +1,49 @@
 import { Generator } from './simplexTwo';
+import Canvas from './Canvas';
 
 /** Parent Render Class */
 export default class Render {
   constructor(element, width, height) {
     // Screen Set Up //
     this.element = element;
-    this.width = width;
-    this.height = height;
+    this.width = width || ~~(document.documentElement.clientWidth, window.innerWidth || 0);
+    this.height = height || ~~(document.documentElement.clientHeight, window.innerHeight || 0);
     this.time = 0;
+    this.size = 10;
     this.generator = new Generator(0);
     // Set Up canvas and surface object //
-    this.perlinCanvas = this.createCanvas('perlin');
-    this.surface = this.perlinCanvas.getContext('2d');
-    this.surface.scale(1, 1);
+    this.can = new Canvas();
+    this.perlinCanvas = this.can.createCanvas('canvas');
+    this.surface = this.perlinCanvas.surface;
+    this.canvas = this.perlinCanvas.canvas;
     // Bind Stuff //
     this.shader = this.shader.bind(this);
     this.renderLoop = this.renderLoop.bind(this);
     // Control Stuff //
     const iteration = document.getElementById('iteration');
-    this.iteration = iteration.value * 0.01;
+    this.iteration = iteration.value * 0.05;
     iteration.addEventListener('change', () => {
-      this.iteration = iteration.value * 0.01;
+      this.iteration = iteration.value * 0.05;
     });
     const shaderType = document.getElementById('shader');
     this.shaderType = shaderType.value;
     shaderType.addEventListener('change', () => {
       this.shaderType = shaderType.value;
     });
+
+    window.addEventListener('resize', this.resetCanvas);
     // run function //
     this.renderLoop();
   }
 
-  createCanvas(name) {
-    const canvasElement = document.createElement('canvas');
-    canvasElement.id = name;
-    canvasElement.width = this.width;
-    canvasElement.height = this.height;
-    this.element.appendChild(canvasElement);
-    return canvasElement;
+  resetCanvas() {
+    window.cancelAnimationFrame(this.animation);
+    this.viewport = this.can.setViewport(this.canvas);
+    this.surface = this.viewport.surface;
+    this.canvas = this.viewport.canvas;
+    this.renderLoop();
   }
+
   /* eslint no-param-reassign: 0 */
   shader(x, y, w, h) {
     this.time += 0.001;
@@ -105,17 +110,21 @@ export default class Render {
     };
   }
   renderLoop() {
-    const size = 5;
+    const size = this.size;
     const w = this.perlinCanvas.width / size;
     const h = this.perlinCanvas.height / size;
-    this.surface.clearRect(0, 0, w, h);
+    this.surface.clearRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
+    // this.time += 0.05;
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         const pixel = this.shader(x, y, w, h);
         this.surface.fillStyle = `rgba(${pixel.r},${pixel.g},${pixel.b},${pixel.a})`;
         this.surface.fillRect(x * size, y * size, size, size);
+        // const pixel = Math.abs(this.generator.simplex3(x / w, y / h, this.time));
+        // this.surface.fillStyle = `hsla(${540 - (pixel * 540)}, ${Math.sin(pixel) * 100}%, 40%, ${pixel}`;
+        // this.surface.fillRect(x * size, y * size, size, size);
       }
     }
-    window.requestAnimationFrame(this.renderLoop);
+    this.animation = window.requestAnimationFrame(this.renderLoop);
   }
 }
