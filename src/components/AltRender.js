@@ -36,11 +36,11 @@ export default class Render {
     this.renderLoop();
   }
 
-  resetCanvas() {
+  resetCanvas = () => {
     window.cancelAnimationFrame(this.animation);
-    this.viewport = this.can.setViewport(this.canvas);
-    this.surface = this.viewport.surface;
-    this.canvas = this.viewport.canvas;
+    this.perlinCanvas = this.can.setViewport(this.canvas);
+    this.surface = this.perlinCanvas.surface;
+    this.canvas = this.perlinCanvas.canvas;
     this.renderLoop();
   }
 

@@ -18,11 +18,11 @@ export class Grad {
   constructor(x, y, z) {
     this.x = x; this.y = y; this.z = z;
   }
-  dot2(x, y) {
+  dot2 = (x, y) => {
     const value = this.x * x + this.y * y;
     return value;
   }
-  dot3(x, y, z) {
+  dot3 = (x, y, z) => {
     const value = this.x * x + this.y * y + this.z * z;
     return value;
   }
@@ -56,7 +56,7 @@ export class Generator {
     this.seed = this.seed(value);
   }
 
-  seed(value) {
+  seed = (value) => {
     let seed = value;
     if (seed > 0 && seed < 1) {
       // Scale the seed out
@@ -81,7 +81,7 @@ export class Generator {
     }
   }
 
-  simplex2(xin, yin) {
+  simplex2 = (xin, yin) => {
     let { n0, n1, n2 } = 0; // Noise contributions from the three corners
     // Skew the input space to determine which simplex cell we're in
     const s = (xin + yin) * this.F2; // Hairy factor for 2D
@@ -139,7 +139,7 @@ export class Generator {
   }
 
   // 3D simplex noise
-  simplex3(xin, yin, zin) {
+  simplex3 = (xin, yin, zin) => {
     let { n0, n1, n2, n3 } = 0; // Noise contributions from the four corners
 
     // Skew the input space to determine which simplex cell we're in
