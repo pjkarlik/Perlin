@@ -1,5 +1,6 @@
 import { Generator } from './simplexTwo';
 import Canvas from './Canvas';
+import Mouse from './Mouse';
 // vendor //
 import dat from 'dat-gui';
 
@@ -11,7 +12,9 @@ export default class Render {
     this.width = width || ~~(document.documentElement.clientWidth, window.innerWidth || 0);
     this.height = height || ~~(document.documentElement.clientHeight, window.innerHeight || 0);
     this.time = 0;
+    this.tick = 0;
     this.size = 10;
+    this.mouse = new Mouse();
     this.generator = new Generator(0);
     // Set Up canvas and surface object //
     this.can = new Canvas();
@@ -61,18 +64,43 @@ export default class Render {
     this.canvas = this.perlinCanvas.canvas;
     this.renderLoop();
   }
-
+  distance = (x1, y1, x2, y2) => {
+    const distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    return distance;
+  };
   /* eslint no-param-reassign: 0 */
-  shader(x, y, w, h) {
+  shader(dx, dy, w, h) {
+    const mouse = this.mouse.pointer();
+    const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
+    const baseDiff = this.distance(mouse.x, mouse.y, dx, dy);
+    const dist = 20 / baseDiff;
+    const shiftx = Math.floor((Math.sin(angle) * dist) + (mouse.x - dx) * 0.01);
+    const shifty = Math.floor((Math.cos(angle) * dist) + (mouse.y - dy) * 0.01);
+    this.tick ++;
+    if (this.tick > 100000) {
+      console.log(shiftx, shifty);
+      this.tick = 0;
+    }
     this.time += 0.001;
-    x /= w;
-    y /= h; // normalize
+    let x = dx / w;
+    let y = dy / h; // normalize
     const size = this.iteration * 0.05;  // pick a scaling value
     let n;
     let r;
     let g;
     let b;
     switch (this.shaderType) {
+      case 'storm': {
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+        // storm
+        x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
+        // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
+        x = Math.sqrt(x); y *= y;
+        r = ~~(255 - x * 255);
+        b = ~~(n * x * 255);
+        g = b; // Math.round(y * 255);
+        break;
+      }
       case 'octal': {
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // render octowave
@@ -101,17 +129,6 @@ export default class Render {
         b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
         g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
         r = ~~(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
-        break;
-      }
-      case 'storm': {
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // storm
-        x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
-        // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
-        x = Math.sqrt(x); y *= y;
-        r = ~~(255 - x * 255);
-        b = ~~(n * x * 255);
-        g = b; // Math.round(y * 255);
         break;
       }
       case 'default': {
