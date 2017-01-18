@@ -1,6 +1,7 @@
 import { Generator } from './simplexTwo';
 import Canvas from './Canvas';
-
+// vendor //
+import dat from 'dat-gui';
 /** Parent Render Class */
 export default class Render {
   constructor(element, width, height) {
@@ -19,22 +20,35 @@ export default class Render {
     // Bind Stuff //
     this.shader = this.shader.bind(this);
     this.renderLoop = this.renderLoop.bind(this);
-    // Control Stuff //
-    const iteration = document.getElementById('iteration');
-    this.iteration = iteration.value * 0.05;
-    iteration.addEventListener('change', () => {
-      this.iteration = iteration.value * 0.05;
-    });
-    const shaderType = document.getElementById('shader');
-    this.shaderType = shaderType.value;
-    shaderType.addEventListener('change', () => {
-      this.shaderType = shaderType.value;
-    });
-
-    window.addEventListener('resize', this.resetCanvas);
     // run function //
+    this.createGUI();
     this.renderLoop();
   }
+  setOptions = (options) => {
+    this.iteration = options.iteration;
+    this.shaderType = options.shaderType;
+  };
+
+  createGUI = () => {
+    this.options = {
+      iteration: 90,
+      shaderType: 'storm',
+      reset: () => {
+        this.reset();
+      },
+    };
+    this.gui = new dat.GUI();
+    const folderRender = this.gui.addFolder('Render Options');
+    folderRender.add(this.options, 'iteration', 1, 200).step(1)
+      .onFinishChange((value) => { this.iteration = value; });
+    folderRender.add(this.options, 'shaderType',
+      ['storm', 'offset', 'octal', 'rainbow', 'default'])
+      .onFinishChange((value) => { this.shaderType = value; });
+    this.gui.add(this.options, 'reset');
+    folderRender.open();
+
+    this.setOptions(this.options);
+  };
 
   resetCanvas = () => {
     window.cancelAnimationFrame(this.animation);
@@ -49,7 +63,7 @@ export default class Render {
     this.time += 0.001;
     x /= w;
     y /= h; // normalize
-    const size = this.iteration;  // pick a scaling value
+    const size = this.iteration * 0.1;  // pick a scaling value
     let n;
     let r;
     let g;
@@ -109,6 +123,10 @@ export default class Render {
       r, g, b, a: 255,
     };
   }
+  reset = () => {
+    this.surface.fillStyle = 'rgba(0,0,0,1)';
+    this.surface.fillRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
+  };
   renderLoop() {
     const size = this.size;
     const w = this.perlinCanvas.width / size;
