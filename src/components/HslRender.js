@@ -146,7 +146,7 @@ export default class Render {
         size = this.iteration * 0.01;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // default
-        shader = `hsla(${540 - (n * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
+        shader = `hsla(${0}, ${n * 100}%, 50%, ${n}`;
         break;
       }
       default:
