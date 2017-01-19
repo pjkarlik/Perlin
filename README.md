@@ -7,6 +7,8 @@
   SimplexNoise document http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
 
 ## Change Log
+  * HSL Render version
+  * Added DAT.gui
   * Updated Functions - Improved performance - adapted from online
   * Added Animation - tweaking functions still...
   * Simplex Noise functions - much faster than Perlin
