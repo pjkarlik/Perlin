@@ -12,10 +12,9 @@ export default class Render {
     this.width = width || ~~(document.documentElement.clientWidth, window.innerWidth || 0);
     this.height = height || ~~(document.documentElement.clientHeight, window.innerHeight || 0);
     this.time = 0;
-    this.tick = 0;
     this.size = 10;
     this.mouse = new Mouse();
-    this.generator = new Generator(0);
+    this.generator = new Generator(10);
     // Set Up canvas and surface object //
     this.can = new Canvas();
     this.perlinCanvas = this.can.createCanvas('canvas');
@@ -34,12 +33,16 @@ export default class Render {
   setOptions = (options) => {
     this.iteration = options.iteration;
     this.shaderType = options.shaderType;
+    this.factor = options.factor;
+    this.distort = options.distort;
   };
 
   createGUI = () => {
     this.options = {
       iteration: 90,
+      factor: 200,
       shaderType: 'storm',
+      distort: false,
       reset: () => {
         this.reset();
       },
@@ -48,9 +51,14 @@ export default class Render {
     const folderRender = this.gui.addFolder('Render Options');
     folderRender.add(this.options, 'iteration', 1, 200).step(1)
       .onFinishChange((value) => { this.iteration = value; });
+
     folderRender.add(this.options, 'shaderType',
       ['storm', 'offset', 'octal', 'rainbow', 'default'])
       .onFinishChange((value) => { this.shaderType = value; });
+    folderRender.add(this.options, 'distort')
+      .onFinishChange((value) => { this.distort = value; });
+    folderRender.add(this.options, 'factor', 1, 1000).step(1)
+      .onFinishChange((value) => { this.factor = value; });
     this.gui.add(this.options, 'reset');
     folderRender.open();
 
@@ -70,78 +78,82 @@ export default class Render {
   };
   /* eslint no-param-reassign: 0 */
   shader(dx, dy, w, h) {
-    const mouse = this.mouse.pointer();
-    const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
-    const baseDiff = this.distance(mouse.x, mouse.y, dx, dy);
-    const dist = 20 / baseDiff;
-    const shiftx = Math.floor((Math.sin(angle) * dist) + (mouse.x - dx) * 0.01);
-    const shifty = Math.floor((Math.cos(angle) * dist) + (mouse.y - dy) * 0.01);
-    this.tick ++;
-    if (this.tick > 100000) {
-      console.log(shiftx, shifty);
-      this.tick = 0;
-    }
+    let size = this.iteration * 0.05;  // pick a scaling value
+    let n;
+    let shader;
+    // Advance time stop in filter
     this.time += 0.001;
     let x = dx / w;
     let y = dy / h; // normalize
-    const size = this.iteration * 0.05;  // pick a scaling value
-    let n;
-    let r;
-    let g;
-    let b;
+    if (this.distort) {
+      // Rec Coord Mouse x/y
+      const firstmouse = this.mouse.pointer();
+      const mouse = {
+        x: (firstmouse.x) / this.size,
+        y: (firstmouse.y) / this.size,
+      };
+      const factor = 0.0001;
+      const angle = Math.atan2(mouse.x - dx, mouse.y - dy);
+      const baseDiff = this.distance(dx, dy, mouse.x, mouse.y);
+      // const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
+      // const baseDiff = this.distance(mouse.x, mouse.y, dx, dy);
+      const dist = this.factor / baseDiff;
+      const shiftx = (Math.sin(angle) * dist) + (dx - mouse.x) * factor;
+      const shifty = (Math.cos(angle) * dist) + (dy - mouse.y) * factor;
+
+      x = Math.floor(dx + shiftx) / w;
+      y = Math.floor(dy + shifty) / h; // normalize
+    }
     switch (this.shaderType) {
       case 'storm': {
+        size = this.iteration * 0.02;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // storm
-        x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
-        // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
-        x = Math.sqrt(x); y *= y;
-        r = ~~(255 - x * 255);
-        b = ~~(n * x * 255);
-        g = b; // Math.round(y * 255);
+        // const m = Math.abs(this.generator.simplex3(size * y, size * x, this.time / 500));
+        // render octowave
+        // const mult = 5;
+        const o = Math.cos(n);
+        shader = `hsla(${360 / o}, 100%, 50%, ${n}`;
         break;
       }
       case 'octal': {
+        size = this.iteration * 0.04;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // render octowave
-        const mult = 25;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult);
-        r = ~~(m * 255);
-        b = ~~(o * 255);
-        g = b;
+        const m = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
+        // default
+        shader = `hsla(${180 / m / 360}, ${m * 150}%, 50%, ${n}`;
         break;
       }
       case 'offset': {
+        size = this.iteration * 0.06;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // render octowave
-        const mult = 15;
+        const mult = 0.89;
         const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult + this.time);
-        r = ~~(m * 255);
-        g = ~~(o * 255);
-        b = 0;
+        shader = `hsla(${540 - (m * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
         break;
       }
       case 'rainbow': {
-        n = Math.abs(this.generator.simplex3(size * 2 * x, size * 2 * y, this.time / 1000));
-        // rainbow
-        b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
-        g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
-        r = ~~(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
+        size = this.iteration * 0.04;
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+        // render octowave
+        const mult = 1.2;
+        const m = Math.cos(n * mult);
+        // const o = Math.sin(n * mult);
+        shader = `hsla(${360 / m / 180}, ${n * 100}%, 50%, ${n}`;
         break;
       }
       case 'default': {
+        size = this.iteration * 0.01;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         // default
-        r = g = b = Math.round(255 * n);
+        shader = `hsla(${540 - (n * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
         break;
       }
       default:
         break;
     }
     return {
-      r, g, b, a: 255,
+      shader,
     };
   }
   reset = () => {
@@ -157,7 +169,8 @@ export default class Render {
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         const pixel = this.shader(x, y, w, h);
-        this.surface.fillStyle = `rgba(${pixel.r},${pixel.g},${pixel.b},${pixel.a})`;
+        // this.surface.fillStyle = `rgba(${pixel.r},${pixel.g},${pixel.b},${pixel.a})`;
+        this.surface.fillStyle = pixel.shader;
         this.surface.fillRect(x * size, y * size, size, size);
         // const pixel = Math.abs(this.generator.simplex3(x / w, y / h, this.time));
         // this.surface.fillStyle = `hsla(${540 - (pixel * 540)}, ${Math.sin(pixel) * 100}%, 40%, ${pixel}`;

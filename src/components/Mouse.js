@@ -10,14 +10,16 @@ export default class Mouse {
     this.events.forEach((eventName) => {
       this.element.addEventListener(eventName, this.getCoordinates);
     });
-    this.element.addEventListener('click', this.logout);
   }
   reset = () => {
     this.x = -200;
     this.y = -200;
   };
   logout = () => {
-    console.log(this.x, this.y);
+    this.events = ['mouseenter', 'mousemove'];
+    this.events.forEach((eventName) => {
+      this.element.removeEventListener(eventName, this.getCoordinates);
+    });
   }
   getCoordinates(event) {
     event.preventDefault();
