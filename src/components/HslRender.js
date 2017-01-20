@@ -76,15 +76,16 @@ export default class Render {
     const distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
     return distance;
   };
-  /* eslint no-param-reassign: 0 */
+
   shader(dx, dy, w, h) {
-    let size = this.iteration * 0.05;  // pick a scaling value
+    let size;
     let n;
     let shader;
     // Advance time stop in filter
     this.time += 0.001;
+    // Normalize coordinates
     let x = dx / w;
-    let y = dy / h; // normalize
+    let y = dy / h;
     if (this.distort) {
       // Rec Coord Mouse x/y
       const firstmouse = this.mouse.pointer();
@@ -95,22 +96,18 @@ export default class Render {
       const factor = 0.0001;
       const angle = Math.atan2(mouse.x - dx, mouse.y - dy);
       const baseDiff = this.distance(dx, dy, mouse.x, mouse.y);
-      // const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
-      // const baseDiff = this.distance(mouse.x, mouse.y, dx, dy);
+
       const dist = this.factor / baseDiff;
       const shiftx = (Math.sin(angle) * dist) + (dx - mouse.x) * factor;
       const shifty = (Math.cos(angle) * dist) + (dy - mouse.y) * factor;
-
+      // Normalize coordinates
       x = Math.floor(dx + shiftx) / w;
-      y = Math.floor(dy + shifty) / h; // normalize
+      y = Math.floor(dy + shifty) / h;
     }
     switch (this.shaderType) {
       case 'storm': {
         size = this.iteration * 0.02;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // const m = Math.abs(this.generator.simplex3(size * y, size * x, this.time / 500));
-        // render octowave
-        // const mult = 5;
         const o = Math.cos(n);
         shader = `hsla(${360 / o}, 100%, 50%, ${n}`;
         break;
@@ -119,14 +116,12 @@ export default class Render {
         size = this.iteration * 0.04;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
         const m = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
-        // default
         shader = `hsla(${180 / m / 360}, ${m * 150}%, 50%, ${n}`;
         break;
       }
       case 'offset': {
         size = this.iteration * 0.06;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // render octowave
         const mult = 0.89;
         const m = Math.cos(n * mult);
         shader = `hsla(${540 - (m * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
@@ -138,14 +133,12 @@ export default class Render {
         // render octowave
         const mult = 1.2;
         const m = Math.cos(n * mult);
-        // const o = Math.sin(n * mult);
         shader = `hsla(${360 / m / 180}, ${n * 100}%, 50%, ${n}`;
         break;
       }
       case 'default': {
         size = this.iteration * 0.01;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // default
         shader = `hsla(${0}, ${n * 100}%, 50%, ${n}`;
         break;
       }
@@ -165,16 +158,12 @@ export default class Render {
     const w = this.perlinCanvas.width / size;
     const h = this.perlinCanvas.height / size;
     this.surface.clearRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
-    // this.time += 0.05;
+
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         const pixel = this.shader(x, y, w, h);
-        // this.surface.fillStyle = `rgba(${pixel.r},${pixel.g},${pixel.b},${pixel.a})`;
         this.surface.fillStyle = pixel.shader;
         this.surface.fillRect(x * size, y * size, size, size);
-        // const pixel = Math.abs(this.generator.simplex3(x / w, y / h, this.time));
-        // this.surface.fillStyle = `hsla(${540 - (pixel * 540)}, ${Math.sin(pixel) * 100}%, 40%, ${pixel}`;
-        // this.surface.fillRect(x * size, y * size, size, size);
       }
     }
     this.animation = window.requestAnimationFrame(this.renderLoop);
