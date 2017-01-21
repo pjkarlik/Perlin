@@ -34,7 +34,7 @@ canvas {
 
 .dg.main {
   z-index: 100;
-  opacity: 0.3;
+  opacity: 0.9;
   transition: opacity 700ms ease-out;
 }
 

@@ -41,7 +41,7 @@ export default class Render {
     this.options = {
       iteration: 90,
       factor: 200,
-      shaderType: 'offset',
+      shaderType: 'storm',
       distort: false,
       reset: () => {
         this.reset();
