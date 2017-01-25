@@ -41,7 +41,7 @@ export default class Render {
     this.options = {
       iteration: 90,
       factor: 200,
-      shaderType: 'storm',
+      shaderType: 'polar',
       distort: false,
       reset: () => {
         this.reset();
@@ -53,7 +53,7 @@ export default class Render {
       .onFinishChange((value) => { this.iteration = value; });
 
     folderRender.add(this.options, 'shaderType',
-      ['storm', 'offset', 'octal', 'rainbow', 'default'])
+      ['storm', 'offset', 'octal', 'polar', 'rainbow', 'default'])
       .onFinishChange((value) => { this.shaderType = value; });
     folderRender.add(this.options, 'distort')
       .onFinishChange((value) => { this.distort = value; });
@@ -94,12 +94,16 @@ export default class Render {
         y: (firstmouse.y) / this.size,
       };
       const factor = 0.0001;
-      const angle = Math.atan2(mouse.x - dx, mouse.y - dy);
+      // const angle = Math.atan2(mouse.x - dx, mouse.y - dy);
+      const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
       const baseDiff = this.distance(dx, dy, mouse.x, mouse.y);
 
       const dist = this.factor / baseDiff;
-      const shiftx = (Math.sin(angle) * dist) + (dx - mouse.x) * factor;
-      const shifty = (Math.cos(angle) * dist) + (dy - mouse.y) * factor;
+      // switch cos/sin for fun
+      // const shiftx = (Math.sin(angle) * dist) + (dx - mouse.x) * factor;
+      // const shifty = (Math.cos(angle) * dist) + (dy - mouse.y) * factor;
+      const shiftx = (Math.cos(angle) * dist) + (dx - mouse.x) * factor;
+      const shifty = (Math.sin(angle) * dist) + (dy - mouse.y) * factor;
       // Normalize coordinates
       x = Math.floor(dx + shiftx) / w;
       y = Math.floor(dy + shifty) / h;
@@ -130,16 +134,24 @@ export default class Render {
       case 'rainbow': {
         size = this.iteration * 0.04;
         n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // render octowave
-        const mult = 1.2;
+        const mult = 3;
         const m = Math.cos(n * mult);
-        shader = `hsla(${360 / m / 180}, ${n * 100}%, 50%, ${n}`;
+        const o = Math.sin(n * mult);
+        shader = `hsla(${m * 120}, 100%, 50%, ${n + o}`;
+        break;
+      }
+      case 'polar': {
+        size = this.iteration * 0.02;
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+        const mult = 10;
+        const m = Math.cos(n * mult);
+        shader = `hsla(${255 - m * 50}, 100%, 50%, ${m}`;
         break;
       }
       case 'default': {
-        size = this.iteration * 0.01;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        shader = `hsla(${0}, ${n * 100}%, 50%, ${n}`;
+        size = this.iteration * 0.04;
+        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
+        shader = `hsla(${0}, ${0}%, 50%, ${n}`;
         break;
       }
       default:
