@@ -12,7 +12,6 @@ export default class Render {
     this.width = width || ~~(document.documentElement.clientWidth, window.innerWidth || 0);
     this.height = height || ~~(document.documentElement.clientHeight, window.innerHeight || 0);
     this.time = 0;
-    this.size = 10;
     this.mouse = new Mouse();
     this.generator = new Generator(10);
     // Set Up canvas and surface object //
@@ -35,23 +34,29 @@ export default class Render {
     this.shaderType = options.shaderType;
     this.factor = options.factor;
     this.distort = options.distort;
+    this.size = options.resolution;
+    this.setSimplexSize(options.resolution);
   };
+
+  setSimplexSize = (value) => {
+    this.smplxwidth = this.perlinCanvas.width / value;
+    this.smplxheight = this.perlinCanvas.height / value;
+  }
 
   createGUI = () => {
     this.options = {
       iteration: 90,
       factor: 200,
-      shaderType: 'polar',
+      resolution: 6,
+      shaderType: 'octal',
       distort: false,
-      reset: () => {
-        this.reset();
-      },
     };
     this.gui = new dat.GUI();
     const folderRender = this.gui.addFolder('Render Options');
     folderRender.add(this.options, 'iteration', 1, 200).step(1)
       .onFinishChange((value) => { this.iteration = value; });
-
+    folderRender.add(this.options, 'resolution', 3, 50).step(1)
+      .onFinishChange((value) => { this.size = value; this.setSimplexSize(value); });
     folderRender.add(this.options, 'shaderType',
       ['storm', 'offset', 'octal', 'polar', 'rainbow', 'default'])
       .onFinishChange((value) => { this.shaderType = value; });
@@ -59,7 +64,6 @@ export default class Render {
       .onFinishChange((value) => { this.distort = value; });
     folderRender.add(this.options, 'factor', 1, 1000).step(1)
       .onFinishChange((value) => { this.factor = value; });
-    this.gui.add(this.options, 'reset');
     folderRender.open();
 
     this.setOptions(this.options);
@@ -70,6 +74,8 @@ export default class Render {
     this.perlinCanvas = this.can.setViewport(this.canvas);
     this.surface = this.perlinCanvas.surface;
     this.canvas = this.perlinCanvas.canvas;
+    this.smplxwidth = this.perlinCanvas.width / this.size;
+    this.smplxheight = this.perlinCanvas.height / this.size;
     this.renderLoop();
   }
   distance = (x1, y1, x2, y2) => {
@@ -77,10 +83,10 @@ export default class Render {
     return distance;
   };
 
-  shader(dx, dy, w, h) {
+  shader = (dx, dy, w, h) => {
     let size;
     let n;
-    let shader;
+    let shaderColor;
     // Advance time stop in filter
     this.time += 0.001;
     // Normalize coordinates
@@ -109,75 +115,79 @@ export default class Render {
       y = Math.floor(dy + shifty) / h;
     }
     switch (this.shaderType) {
-      case 'storm': {
-        size = this.iteration * 0.02;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const o = Math.cos(n);
-        shader = `hsla(${360 / o}, 100%, 50%, ${n}`;
-        break;
-      }
-      case 'octal': {
-        size = this.iteration * 0.04;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const m = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
-        shader = `hsla(${180 / m / 360}, ${m * 150}%, 50%, ${n}`;
-        break;
-      }
-      case 'offset': {
-        size = this.iteration * 0.06;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const mult = 0.89;
-        const m = Math.cos(n * mult);
-        shader = `hsla(${540 - (m * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
-        break;
-      }
-      case 'rainbow': {
-        size = this.iteration * 0.04;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const mult = 3;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult);
-        shader = `hsla(${m * 120}, 100%, 50%, ${n + o}`;
-        break;
-      }
-      case 'polar': {
-        size = this.iteration * 0.02;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const mult = 10;
-        const m = Math.cos(n * mult);
-        shader = `hsla(${255 - m * 50}, 100%, 50%, ${m}`;
-        break;
-      }
-      case 'default': {
-        size = this.iteration * 0.04;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
-        shader = `hsla(${0}, ${0}%, 50%, ${n}`;
-        break;
-      }
+      case 'storm':
+        {
+          size = this.iteration * 0.02;
+          n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+          const o = Math.cos(n);
+          shaderColor = `hsla(${360 / o}, 100%, 50%, ${n}`;
+          break;
+        }
+      case 'octal':
+        {
+          size = this.iteration * 0.04;
+          n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+          const m = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 500));
+          shaderColor = `hsla(${180 / m / 360}, ${m * 50 / n}%, 50%, ${n}`;
+          break;
+        }
+      case 'offset':
+        {
+          size = this.iteration * 0.03;
+          n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+          const v = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 500));
+          const mult = 0.89;
+          const m = Math.cos(v * mult);
+          shaderColor = `hsla(${240 - (m * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
+          break;
+        }
+      case 'rainbow':
+        {
+          size = this.iteration * 0.04;
+          n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+          const mult = 3;
+          const m = Math.cos(n * mult);
+          const o = Math.sin(n * mult);
+          shaderColor = `hsla(${m * 120}, 100%, 50%, ${n + o}`;
+          break;
+        }
+      case 'polar':
+        {
+          size = this.iteration * 0.02;
+          n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+          const mult = 10;
+          const m = Math.cos(n * mult);
+          shaderColor = `hsla(${255 - m * 50}, 100%, 50%, ${m}`;
+          break;
+        }
+      case 'default':
+        {
+          size = this.iteration * 0.04;
+          n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
+          shaderColor = `hsla(${0}, ${0}%, 50%, ${n}`;
+          break;
+        }
       default:
         break;
     }
     return {
-      shader,
+      shader: shaderColor,
     };
-  }
+  };
   reset = () => {
     this.surface.fillStyle = 'rgba(0,0,0,1)';
     this.surface.fillRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
-  }
-  renderLoop() {
-    const size = this.size;
-    const w = this.perlinCanvas.width / size;
-    const h = this.perlinCanvas.height / size;
+  };
+  renderLoop = () => {
     this.surface.clearRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
 
-    for (let x = 0; x < w; x++) {
-      for (let y = 0; y < h; y++) {
-        const pixel = this.shader(x, y, w, h);
+    for (let x = 0; x < this.smplxwidth; x++) {
+      for (let y = 0; y < this.smplxheight; y++) {
+        const pixel = this.shader(x, y, this.smplxwidth, this.smplxheight);
         this.surface.fillStyle = pixel.shader;
-        this.surface.fillRect(x * size, y * size, size, size);
+        this.surface.fillRect(x * this.size, y * this.size, this.size, this.size);
       }
     }
     this.animation = window.requestAnimationFrame(this.renderLoop);
-  }
+  };
 }

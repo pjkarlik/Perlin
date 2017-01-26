@@ -12,7 +12,6 @@ export default class Render {
     this.width = width || ~~(document.documentElement.clientWidth, window.innerWidth || 0);
     this.height = height || ~~(document.documentElement.clientHeight, window.innerHeight || 0);
     this.time = 0;
-    this.size = 8;
     this.mouse = new Mouse();
     this.generator = new Generator(10);
     // Set Up canvas and surface object //
@@ -35,23 +34,29 @@ export default class Render {
     this.shaderType = options.shaderType;
     this.factor = options.factor;
     this.distort = options.distort;
+    this.size = options.resolution;
+    this.setSimplexSize(options.resolution);
   };
+
+  setSimplexSize = (value) => {
+    this.smplxwidth = this.perlinCanvas.width / value;
+    this.smplxheight = this.perlinCanvas.height / value;
+  }
 
   createGUI = () => {
     this.options = {
       iteration: 90,
       factor: 200,
+      resolution: 10,
       shaderType: 'storm',
       distort: false,
-      reset: () => {
-        this.reset();
-      },
     };
     this.gui = new dat.GUI();
     const folderRender = this.gui.addFolder('Render Options');
     folderRender.add(this.options, 'iteration', 1, 200).step(1)
       .onFinishChange((value) => { this.iteration = value; });
-
+    folderRender.add(this.options, 'resolution', 3, 50).step(1)
+      .onFinishChange((value) => { this.size = value; this.setSimplexSize(value); });
     folderRender.add(this.options, 'shaderType',
       ['storm', 'offset', 'octal', 'rainbow', 'default'])
       .onFinishChange((value) => { this.shaderType = value; });
@@ -59,7 +64,6 @@ export default class Render {
       .onFinishChange((value) => { this.distort = value; });
     folderRender.add(this.options, 'factor', 1, 1000).step(1)
       .onFinishChange((value) => { this.factor = value; });
-    this.gui.add(this.options, 'reset');
     folderRender.open();
 
     this.setOptions(this.options);
@@ -70,14 +74,15 @@ export default class Render {
     this.perlinCanvas = this.can.setViewport(this.canvas);
     this.surface = this.perlinCanvas.surface;
     this.canvas = this.perlinCanvas.canvas;
+    this.smplxwidth = this.perlinCanvas.width / this.size;
+    this.smplxheight = this.perlinCanvas.height / this.size;
     this.renderLoop();
   }
   distance = (x1, y1, x2, y2) => {
     const distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
     return distance;
   };
-  /* eslint no-param-reassign: 0 */
-  shader(dx, dy, w, h) {
+  shader = (dx, dy, w, h) => {
     let size = this.iteration * 0.05;  // pick a scaling value
     let n;
     let r;
@@ -95,16 +100,19 @@ export default class Render {
         y: (firstmouse.y) / this.size,
       };
       const factor = 0.0001;
-      const angle = Math.atan2(mouse.x - dx, mouse.y - dy);
+      // const angle = Math.atan2(mouse.x - dx, mouse.y - dy);
+      const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
       const baseDiff = this.distance(dx, dy, mouse.x, mouse.y);
-      // const angle = Math.atan2(dx - mouse.x, dy - mouse.y);
-      // const baseDiff = this.distance(mouse.x, mouse.y, dx, dy);
-      const dist = this.factor / baseDiff;
-      const shiftx = (Math.sin(angle) * dist) + (dx - mouse.x) * factor;
-      const shifty = (Math.cos(angle) * dist) + (dy - mouse.y) * factor;
 
+      const dist = this.factor / baseDiff;
+      // switch cos/sin for fun
+      // const shiftx = (Math.sin(angle) * dist) + (dx - mouse.x) * factor;
+      // const shifty = (Math.cos(angle) * dist) + (dy - mouse.y) * factor;
+      const shiftx = (Math.cos(angle) * dist) + (dx - mouse.x) * factor;
+      const shifty = (Math.sin(angle) * dist) + (dy - mouse.y) * factor;
+      // Normalize coordinates
       x = Math.floor(dx + shiftx) / w;
-      y = Math.floor(dy + shifty) / h; // normalize
+      y = Math.floor(dy + shifty) / h;
     }
     switch (this.shaderType) {
       case 'storm': {
@@ -136,7 +144,7 @@ export default class Render {
         // render octowave
         const mult = 15;
         const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult + (this.time * 0.8));
+        const o = Math.sin(n * mult + (this.time * size));
         r = ~~(m * 255);
         g = ~~(o * 255);
         b = 0;
@@ -163,27 +171,21 @@ export default class Render {
     return {
       r, g, b, a: 255,
     };
-  }
+  };
   reset = () => {
     this.surface.fillStyle = 'rgba(0,0,0,1)';
     this.surface.fillRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
-  }
-  renderLoop() {
-    const size = this.size;
-    const w = this.perlinCanvas.width / size;
-    const h = this.perlinCanvas.height / size;
+  };
+  renderLoop = () => {
     this.surface.clearRect(0, 0, this.perlinCanvas.width, this.perlinCanvas.height);
-    // this.time += 0.05;
-    for (let x = 0; x < w; x++) {
-      for (let y = 0; y < h; y++) {
-        const pixel = this.shader(x, y, w, h);
+
+    for (let x = 0; x < this.smplxwidth; x++) {
+      for (let y = 0; y < this.smplxheight; y++) {
+        const pixel = this.shader(x, y, this.smplxwidth, this.smplxheight);
         this.surface.fillStyle = `rgba(${pixel.r},${pixel.g},${pixel.b},${pixel.a})`;
-        this.surface.fillRect(x * size, y * size, size, size);
-        // const pixel = Math.abs(this.generator.simplex3(x / w, y / h, this.time));
-        // this.surface.fillStyle = `hsla(${540 - (pixel * 540)}, ${Math.sin(pixel) * 100}%, 40%, ${pixel}`;
-        // this.surface.fillRect(x * size, y * size, size, size);
+        this.surface.fillRect(x * this.size, y * this.size, this.size, this.size);
       }
     }
     this.animation = window.requestAnimationFrame(this.renderLoop);
-  }
+  };
 }
