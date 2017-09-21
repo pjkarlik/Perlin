@@ -31,7 +31,7 @@ export default class Mouse {
   pointer() {
     return {
       x: this.x,
-      y: this.y,
+      y: this.y
     };
   }
 }

@@ -17,7 +17,7 @@ export default class Canvas {
       surface: this.surface,
       canvas: canvasElement,
       width: this.width,
-      height: this.height,
+      height: this.height
     };
     return canvasObject;
   };
@@ -40,7 +40,7 @@ export default class Canvas {
       surface: this.surface,
       canvas: canvasElement,
       width: this.width,
-      height: this.height,
+      height: this.height
     };
     return canvasObject;
   };

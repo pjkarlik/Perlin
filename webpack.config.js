@@ -1,68 +1,147 @@
-
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+/* eslint no-console: 0 */
+'use strict';
+const AutoPrefixer = require('autoprefixer');
+const fs = require('fs');
 const path = require('path');
 const pkgInfo = require('./package.json');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { name, version, description } = pkgInfo;
-const fs = require('fs');
+
 fs.writeFileSync('version.json', JSON.stringify({ name, version, description }));
+const DEV_PORT = 2020;
+const marker = 'debug';
 
 const config = {
   name: 'Perlin',
   target: 'web',
   devServer: {
+    disableHostCheck: true,
     host: '0.0.0.0',
-    port: '9090',
-    historyApiFallback: true,
+    port: DEV_PORT,
+    historyApiFallback: true
   },
-  devtool: 'source-map',
   output: {
     path: path.join(__dirname, 'dist/'),
-    filename: 'index.js',
-    libraryTarget: 'umd',
+    filename: `[name].${marker}.js`,
+    chunkFilename: `[id].${marker}.js`,
+    libraryTarget: 'umd'
   },
-  entry: './src/index.js',
+  entry: {
+    main: './src/index.js',
+    vendor: [
+      'babel-polyfill'
+    ]
+  },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel',
-        include: [/src/],
-        exclude: /node_modules/,
+        include: [
+          /src/
+        ],
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true
+            }
+          }
+        ]
       },
       {
-        test: /\.(css)$/,
-        loader: 'style!css',
-        include: [/resources/],
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
       },
       {
-        test: /\.(png|jpg)$/,
-        loader: 'file',
+        test: /\.less$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            {
+              loader: 'css-loader',
+              options: {
+                modules: true,
+                importLoaders: 1,
+                localIdentName: '[name]__[local]___[hash:base64:5]'
+              }
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                plugins: () => [AutoPrefixer]
+              }
+            },
+            'less-loader'
+          ],
+          publicPath: '../'
+        })
       },
       {
-        test: /\.(wav)$/,
-        loader: 'file',
+        test: /\.(png|gif|cur|jpg)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: 'images/[name]__[hash:base64:5].[ext]'
+            }
+          },
+          {
+            loader: 'image-webpack-loader',
+            options: {
+              bypassOnDebug: true,
+              optipng: {
+                optimizationLevel: 7
+              },
+              gifsicle: {
+                interlaced: false
+              }
+            }
+          }
+        ]
       },
       {
-        test: /\.json$/,
-        loader: 'json',
+        test: /\.(woff2|woff|eot|ttf|svg)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: 'fonts/[name]_[hash:base64:5].[ext]'
+            }
+          }
+        ]
       },
-    ],
-    preLoaders: [
-      { test: /\.js$/,
-        loader: 'eslint-loader',
-      },
-    ],
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: [
+          {
+            loader: 'eslint-loader',
+            options: {
+              failOnError: true
+            }
+          }
+        ]
+      }
+    ]
   },
   plugins: [
+    new ExtractTextPlugin({
+      filename: `style/[name].${marker}.[contenthash].css`,
+      allChunks: true
+    }),
     new HtmlWebpackPlugin({
       css: 'styles/styles.css',
-      title: 'Perlin',
+      title: 'Perlin / Simplex Noise',
       favicon: './resources/images/favicon.png',
       template: './resources/templates/template.ejs',
       inject: 'body',
-      hash: true,
-    }),
-  ],
+      hash: true
+    })
+  ]
 };
 
 module.exports = config;
