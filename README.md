@@ -1,4 +1,4 @@
-![travis ci build](https://travis-ci.org/pjkarlik/Field.svg?branch=master)
+![travis ci build](https://travis-ci.org/pjkarlik/Perlin.svg?branch=master)
 ![webpack2](https://img.shields.io/badge/webpack-2.0-brightgreen.svg) ![javascript](https://img.shields.io/badge/es6-bable-yellow.svg)
 
 # Perlin and Simplex Noise
