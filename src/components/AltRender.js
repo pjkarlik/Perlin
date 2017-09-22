@@ -1,4 +1,4 @@
-import { Generator } from './simplexTwo';
+import { Generator } from '../functions/simplexTwo';
 import Canvas from './Canvas';
 import Mouse from './Mouse';
 // vendor //

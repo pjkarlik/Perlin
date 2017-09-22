@@ -1,4 +1,4 @@
-import simplexNoise from './simplexNoise';
+import simplexNoise from '../functions/simplexNoise';
 import Canvas from './Canvas';
 // vendor //
 import dat from 'dat-gui';
@@ -35,7 +35,7 @@ export default class Render {
       shaderType: 'storm',
       reset: () => {
         this.reset();
-      },
+      }
     };
     this.gui = new dat.GUI();
     const folderRender = this.gui.addFolder('Render Options');
@@ -69,58 +69,58 @@ export default class Render {
     let g;
     let b;
     switch (this.shaderType) {
-      case 'octal': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
-        // render octowave
-        const mult = 25;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult);
-        r = ~~(m * 255);
-        b = ~~(o * 255);
-        g = b;
-        break;
-      }
-      case 'offset': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
-        // render octowave
-        const mult = 15;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult + this.time);
-        r = ~~(m * 255);
-        g = ~~(o * 255);
-        b = 0;
-        break;
-      }
-      case 'rainbow': {
-        n = simplexNoise(size * 2 * x, size * 2 * y, this.time / 1000);
-        // rainbow
-        b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
-        g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
-        r = ~~(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
-        break;
-      }
-      case 'storm': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
-        // storm
-        x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
-        // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
-        x = Math.sqrt(x); y *= y;
-        r = ~~(255 - x * 255);
-        b = ~~(n * x * 255);
-        g = b; // Math.round(y * 255);
-        break;
-      }
-      case 'default': {
-        n = simplexNoise(size * x, size * y, this.time / 1000);
-        // default
-        r = g = b = Math.round(255 * n);
-        break;
-      }
-      default:
-        break;
+    case 'octal': {
+      n = simplexNoise(size * x, size * y, this.time / 1000);
+      // render octowave
+      const mult = 25;
+      const m = Math.cos(n * mult);
+      const o = Math.sin(n * mult);
+      r = ~~(m * 255);
+      b = ~~(o * 255);
+      g = b;
+      break;
+    }
+    case 'offset': {
+      n = simplexNoise(size * x, size * y, this.time / 1000);
+      // render octowave
+      const mult = 15;
+      const m = Math.cos(n * mult);
+      const o = Math.sin(n * mult + this.time);
+      r = ~~(m * 255);
+      g = ~~(o * 255);
+      b = 0;
+      break;
+    }
+    case 'rainbow': {
+      n = simplexNoise(size * 2 * x, size * 2 * y, this.time / 1000);
+      // rainbow
+      b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
+      g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
+      r = ~~(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
+      break;
+    }
+    case 'storm': {
+      n = simplexNoise(size * x, size * y, this.time / 1000);
+      // storm
+      x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
+      // y = (1 + Math.sin(n + 2 * Math.PI * y - this.time));
+      x = Math.sqrt(x); y *= y;
+      r = ~~(255 - x * 255);
+      b = ~~(n * x * 255);
+      g = b; // Math.round(y * 255);
+      break;
+    }
+    case 'default': {
+      n = simplexNoise(size * x, size * y, this.time / 1000);
+      // default
+      r = g = b = Math.round(255 * n);
+      break;
+    }
+    default:
+      break;
     }
     return {
-      r, g, b, a: 255,
+      r, g, b, a: 255
     };
   }
   reset = () => {
