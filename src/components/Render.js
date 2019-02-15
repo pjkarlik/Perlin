@@ -1,7 +1,7 @@
 import simplexNoise from '../functions/simplexNoise';
 import Canvas from './Canvas';
 // vendor //
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 
 /** Parent Render Class */
 export default class Render {
@@ -31,7 +31,7 @@ export default class Render {
 
   createGUI = () => {
     this.options = {
-      iteration: 90,
+      iteration: 24,
       shaderType: 'storm',
       reset: () => {
         this.reset();
@@ -39,7 +39,7 @@ export default class Render {
     };
     this.gui = new dat.GUI();
     const folderRender = this.gui.addFolder('Render Options');
-    folderRender.add(this.options, 'iteration', 1, 200).step(1)
+    folderRender.add(this.options, 'iteration', 1, 100).step(0.1)
       .onFinishChange((value) => { this.iteration = value; });
     folderRender.add(this.options, 'shaderType',
       ['storm', 'offset', 'octal', 'rainbow', 'default'])

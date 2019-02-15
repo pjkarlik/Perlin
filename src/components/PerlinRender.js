@@ -2,7 +2,7 @@ import Perlin from '../functions/Perlin';
 import Canvas from './Canvas';
 import Mouse from './Mouse';
 // vendor //
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 
 /** Parent Render Class */
 export default class Render {

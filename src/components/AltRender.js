@@ -2,7 +2,7 @@ import { Generator } from '../functions/simplexTwo';
 import Canvas from './Canvas';
 import Mouse from './Mouse';
 // vendor //
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 
 /** Parent Render Class */
 export default class Render {
@@ -47,7 +47,7 @@ export default class Render {
     this.options = {
       iteration: 90,
       factor: 200,
-      resolution: 10,
+      resolution: 15,
       shaderType: 'storm',
       distort: false,
     };
@@ -115,58 +115,58 @@ export default class Render {
       y = Math.floor(dy + shifty) / h;
     }
     switch (this.shaderType) {
-      case 'storm': {
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // storm
-        x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
-        y = (1 + Math.sin(n + 2 * Math.PI * y - (this.time * 0.002)));
-        x = Math.sqrt(x); y *= y;
-        r = ~~(255 - x * 255);
-        g = ~~(n * y * 255);
-        b = r; // Math.round(y * 255);
-        break;
-      }
-      case 'octal': {
-        size = this.iteration * 0.02;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // render octowave
-        const mult = 25;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult);
-        r = ~~(m * 255);
-        b = ~~(o * 255);
-        g = b;
-        break;
-      }
-      case 'offset': {
-        size = this.iteration * 0.015;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 10000));
-        // render octowave
-        const mult = 15;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult + (this.time * size));
-        r = ~~(m * 255);
-        g = ~~(o * 255);
-        b = 0;
-        break;
-      }
-      case 'rainbow': {
-        n = Math.abs(this.generator.simplex3(size * 2 * x, size * 2 * y, this.time / 1000));
-        // rainbow
-        b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
-        g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
-        r = ~~(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
-        break;
-      }
-      case 'default': {
-        size = this.iteration * 0.08;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        // default
-        r = g = b = Math.round(255 * n);
-        break;
-      }
-      default:
-        break;
+    case 'storm': {
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      // storm
+      x = (1 + Math.cos(n + 2 * Math.PI * x - (this.time * 0.001)));
+      y = (1 + Math.sin(n + 2 * Math.PI * y - (this.time * 0.002)));
+      x = Math.sqrt(x); y *= y;
+      r = ~~(255 - x * 255);
+      g = ~~(n * y * 255);
+      b = r; // Math.round(y * 255);
+      break;
+    }
+    case 'octal': {
+      size = this.iteration * 0.02;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      // render octowave
+      const mult = 25;
+      const m = Math.cos(n * mult);
+      const o = Math.sin(n * mult);
+      r = ~~(m * 255);
+      b = ~~(o * 255);
+      g = b;
+      break;
+    }
+    case 'offset': {
+      size = this.iteration * 0.015;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 10000));
+      // render octowave
+      const mult = 15;
+      const m = Math.cos(n * mult);
+      const o = Math.sin(n * mult + (this.time * size));
+      r = ~~(m * 255);
+      g = ~~(o * 255);
+      b = 0;
+      break;
+    }
+    case 'rainbow': {
+      n = Math.abs(this.generator.simplex3(size * 2 * x, size * 2 * y, this.time / 1000));
+      // rainbow
+      b = ~~(255 - 255 * (1 - Math.sin(n - 6.3 * x)) / 2);
+      g = ~~(255 - 255 * (1 + Math.cos(n + 6.3 * x)) / 2);
+      r = ~~(255 - 255 * (1 - Math.sin(n + 6.3 * x)) / 2);
+      break;
+    }
+    case 'default': {
+      size = this.iteration * 0.08;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      // default
+      r = g = b = Math.round(255 * n);
+      break;
+    }
+    default:
+      break;
     }
     return {
       r, g, b, a: 255,

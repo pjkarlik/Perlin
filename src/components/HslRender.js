@@ -2,7 +2,7 @@ import { Generator } from '../functions/simplexTwo';
 import Canvas from './Canvas';
 import Mouse from './Mouse';
 // vendor //
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 
 /** Parent Render Class */
 export default class Render {
@@ -47,7 +47,7 @@ export default class Render {
     this.options = {
       iteration: 90,
       factor: 200,
-      resolution: 6,
+      resolution: 16,
       shaderType: 'octal',
       distort: false
     };
@@ -116,57 +116,57 @@ export default class Render {
     }
     switch (this.shaderType) {
     case 'storm':
-      {
-        size = this.iteration * 0.02;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const o = Math.cos(n);
-        shaderColor = `hsla(${360 / o}, 100%, 50%, ${n}`;
-        break;
-      }
+    {
+      size = this.iteration * 0.02;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      const o = Math.cos(n);
+      shaderColor = `hsla(${360 / o}, 100%, 50%, ${n}`;
+      break;
+    }
     case 'octal':
-      {
-        size = this.iteration * 0.04;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const m = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 500));
-        shaderColor = `hsla(${180 / m / 360}, ${m * 50 / n}%, 50%, ${n}`;
-        break;
-      }
+    {
+      size = this.iteration * 0.04;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      const m = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 500));
+      shaderColor = `hsla(${180 / m / 360}, ${m * 50 / n}%, 50%, ${n}`;
+      break;
+    }
     case 'offset':
-      {
-        size = this.iteration * 0.03;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const v = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 500));
-        const mult = 0.89;
-        const m = Math.cos(v * mult);
-        shaderColor = `hsla(${240 - (m * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
-        break;
-      }
+    {
+      size = this.iteration * 0.03;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      const v = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 500));
+      const mult = 0.89;
+      const m = Math.cos(v * mult);
+      shaderColor = `hsla(${240 - (m * 540)}, ${Math.sin(n) * 100}%, 50%, ${n}`;
+      break;
+    }
     case 'rainbow':
-      {
-        size = this.iteration * 0.04;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const mult = 3;
-        const m = Math.cos(n * mult);
-        const o = Math.sin(n * mult);
-        shaderColor = `hsla(${m * 120}, 100%, 50%, ${n + o}`;
-        break;
-      }
+    {
+      size = this.iteration * 0.04;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      const mult = 3;
+      const m = Math.cos(n * mult);
+      const o = Math.sin(n * mult);
+      shaderColor = `hsla(${m * 120}, 100%, 50%, ${n + o}`;
+      break;
+    }
     case 'polar':
-      {
-        size = this.iteration * 0.02;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
-        const mult = 10;
-        const m = Math.cos(n * mult);
-        shaderColor = `hsla(${255 - m * 50}, 100%, 50%, ${m}`;
-        break;
-      }
+    {
+      size = this.iteration * 0.02;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 1000));
+      const mult = 10;
+      const m = Math.cos(n * mult);
+      shaderColor = `hsla(${255 - m * 50}, 100%, 50%, ${m}`;
+      break;
+    }
     case 'default':
-      {
-        size = this.iteration * 0.04;
-        n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
-        shaderColor = `hsla(${0}, ${0}%, 50%, ${n}`;
-        break;
-      }
+    {
+      size = this.iteration * 0.04;
+      n = Math.abs(this.generator.simplex3(size * x, size * y, this.time / 100));
+      shaderColor = `hsla(${0}, ${0}%, 50%, ${n}`;
+      break;
+    }
     default:
       break;
     }
